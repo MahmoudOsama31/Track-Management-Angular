@@ -1,0 +1,59 @@
+<div class="container py-4">
+  <h1 class="h3 mb-4">Tracks</h1>
+
+  <div class="row mb-3">
+    <div class="col-auto">
+      <label for="statusFilter" class="form-label">Status</label>
+      <select
+        id="statusFilter"
+        class="form-select"
+        [(ngModel)]="statusFilter"
+        (ngModelChange)="onStatusChange()"
+      >
+        <option value="">All</option>
+        @for (status of statusOptions; track status) {
+          <option [value]="status">{{ status }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="alert alert-info">Loading tracks...</div>
+  }
+
+  @if (error) {
+    <div class="alert alert-danger">{{ error }}</div>
+  }
+
+  @if (!loading && !error) {
+    @if (tracks.length === 0) {
+      <div class="alert alert-secondary">No tracks found.</div>
+    } @else {
+      <table class="table table-striped table-bordered">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Artist</th>
+            <th>Genre</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (track of tracks; track track.id) {
+            <tr>
+              <td>{{ track.title }}</td>
+              <td>{{ track.artistName }}</td>
+              <td>{{ track.genre }}</td>
+              <td>{{ track.status }}</td>
+              <td>
+                <a [routerLink]="['/track', track.id]" class="btn btn-sm btn-primary">Details</a>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  }
+</div>
