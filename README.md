@@ -1,59 +1,113 @@
-# TrackManagementUi
+# Track Management UI
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.0.6.
+An Angular single-page front-end for the Track Management API. It lets a music
+distribution team browse an artist's catalog of tracks, filter by status, and drill into a
+single track to see its release info and per-DSP (Spotify, Apple Music, Amazon Music, etc.)
+distribution status.
 
-## Development server
+## Overview
 
-To start a local development server, run:
+The app is a standalone-components Angular 19 project with two views: a track list and a
+track detail page. It talks to the Track Management backend API over HTTP using a single
+`TrackService`.
+
+## Features
+
+- **Track List** — displays every track's title, artist name, genre, and status, with a
+  dropdown to filter by status (`Draft` / `Submitted` / `Distributed`)
+- **Track Detail** — shows a track's full info (artist, ISRC, genre, release date, status)
+  and the list of DSPs it has been distributed to, along with each distribution's status
+  and submission date
+- Loading and error states on both pages
+- Client-side routing between list and detail views
+
+## Tech Stack
+
+- **Angular 19** (standalone components, `@angular/router`, `@angular/forms`)
+- **RxJS** for HTTP observables
+- **Bootstrap 5** for styling
+- **Karma / Jasmine** for unit tests
+
+## Prerequisites
+
+- [Node.js](https://nodejs.org/) (LTS) and npm
+- [Angular CLI](https://angular.dev/tools/cli) 19.x (`npm install -g @angular/cli`, optional —
+  `npx ng` also works via the local dev dependency)
+- The Track Management backend running and reachable (see the backend `README.md`)
+
+## Installation
+
+From the `Track-Management-Angular` directory:
 
 ```bash
-ng serve
+npm install
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## How to Run the Application
 
 ```bash
-ng generate component component-name
+npm start
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+(equivalent to `ng serve`). This starts the dev server at `http://localhost:4200/` with
+live reload on source changes. The backend's CORS policy is configured specifically to
+allow requests from this origin.
 
-```bash
-ng generate --help
+## Environment Configuration
+
+The API base URL is set in `src/environments/environment.ts`:
+
+```ts
+export const environment = {
+  apiBaseUrl: 'https://localhost:44369/api'
+};
 ```
 
-## Building
+This is the single environment file used for both development and production builds (no
+`environment.prod.ts` / file replacement is configured). If your backend is running on a
+different host/port (for example `https://localhost:7091` when started via
+`dotnet run`), update `apiBaseUrl` accordingly before running or building the app.
 
-To build the project run:
+## Available Pages
+
+| Route          | Component               | Description                                                        |
+|----------------|--------------------------|----------------------------------------------------------------------|
+| `/`            | `TrackListComponent`     | Lists all tracks with artist, genre, status, and a status filter    |
+| `/track/:id`   | `TrackDetailsComponent`  | Shows a track's details and its DSP distribution statuses           |
+| `**`           | —                        | Redirects to `/`                                                     |
+
+## Project Structure
+
+```
+src/app/
+├── core/
+│   ├── models/                  # Artist, Track, TrackDetails, TrackDistribution types
+│   └── services/
+│       └── track.service.ts     # HTTP calls to the Tracks API
+├── pages/
+│   ├── track-list/              # Track List view
+│   └── track-details/           # Track Detail view
+├── app.component.*              # Root component (router outlet)
+├── app.config.ts                # App-wide providers (router, HttpClient)
+└── app.routes.ts                # Route definitions
+```
+
+## Production Build
 
 ```bash
 ng build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Build artifacts are emitted to `dist/track-management-ui`.
 
-## Running unit tests
+## Connecting to the Backend
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- Ensure the backend is running first and note which URL it's listening on (see the
+  backend `README.md` for `dotnet run` output/ports).
+- Update `src/environments/environment.ts` → `apiBaseUrl` to match that URL, including
+  the `/api` suffix.
+- The endpoints this app currently calls are read-only (`GET /api/tracks`,
+  `GET /api/tracks/{id}`) — no login/JWT flow is implemented in the UI itself. To use
+  JWT-protected backend endpoints (e.g. distributing a track) from outside this UI, obtain
+  a token via `POST /api/auth/token` as described in the backend README and send it as an
+  `Authorization: Bearer <token>` header.
